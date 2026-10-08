@@ -1,0 +1,365 @@
+# Domain configuration — Electric Vehicles
+# Core pipeline code never reads this file directly; it is loaded via domain_config.py.
+# To create a new domain, copy this file and replace all sections.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── COLLECTION: keyword groups for Reddit / YouTube search ───────────────────
+keyword_groups:
+  battery:
+    - "EV battery"
+    - "battery health"
+    - "battery degradation"
+    - "battery life"
+    - "battery replacement"
+    - "battery warranty"
+    - "battery failure"
+
+  range:
+    - "EV range"
+    - "real world range"
+    - "range anxiety"
+    - "range loss"
+    - "winter range"
+    - "highway range"
+
+  charging:
+    - "EV charging"
+    - "fast charging"
+    - "DC fast charging"
+    - "charging speed"
+    - "charging problem"
+    - "charging station"
+    - "charging reliability"
+
+  thermal:
+    - "battery overheating"
+    - "battery cooling"
+    - "thermal management"
+    - "winter battery performance"
+
+  reliability_safety:
+    - "battery fire"
+    - "EV reliability"
+    - "battery replacement cost"
+
+  ownership:
+    - "EV long term ownership"
+    - "EV owner experience"
+    - "EV after 1 year"
+    - "EV after 3 years"
+    - "EV maintenance"
+
+# ── ASPECT EXTRACTION ─────────────────────────────────────────────────────────
+# Each aspect has a list of regex patterns matched case-insensitively.
+# Matched text spans are stored in review_aspects.matched_text.
+aspect_config:
+  battery:
+    battery_health:
+      patterns:
+        - "battery health"
+        - "state of health"
+        - "battery capacity"
+        - "capacity loss"
+        - "battery degradation"
+        - "battery degrades?"
+        - "\\bdegradation\\b"
+        - "\\bSoH\\b"
+        - "battery.{0,10}range"
+        - "range has dropped"
+        - "range.{0,15}dropped"
+        - "battery.{0,10}dropped"
+    battery_replacement:
+      patterns:
+        - "battery replacement"
+        - "replace.*?battery"
+        - "new battery"
+        - "battery pack"
+        - "battery cost"
+        - "battery price"
+    battery_warranty:
+      patterns:
+        - "battery warranty"
+        - "warranty.*?battery"
+        - "under warranty"
+        - "warranty claim"
+    battery_failure:
+      patterns:
+        - "battery failure"
+        - "battery died"
+        - "battery dead"
+        - "battery fire"
+        - "thermal runaway"
+        - "battery fault"
+
+  range:
+    range_general:
+      patterns:
+        - "real.?world range"
+        - "actual range"
+        - "rated range"
+        - "EPA range"
+        - "\\bWLTP\\b"
+        - "\\brange\\b"
+    range_anxiety:
+      patterns:
+        - "range anxiety"
+        - "run out.*?charge"
+        - "\\bstranded\\b"
+        - "range.{0,10}problem"
+    range_winter:
+      patterns:
+        - "winter range"
+        - "cold.{0,15}range"
+        - "range.{0,15}cold"
+        - "range.{0,15}winter"
+        - "range.{0,15}temperature"
+    range_loss:
+      patterns:
+        - "range loss"
+        - "lost.{0,10}range"
+        - "range dropped"
+        - "range decrease"
+        - "range reduction"
+        - "range has dropped"
+        - "range.{0,10}has dropped"
+
+  charging:
+    charging_speed:
+      patterns:
+        - "charging speed"
+        - "charge rate"
+        - "\\bkW\\b"
+        - "fast.?charg"
+        - "charg.{0,20}fast"
+        - "\\bcharging\\b"
+        - "DC fast charg"
+        - "supercharg"
+        - "rapid charg"
+    charging_reliability:
+      patterns:
+        - "charging.{0,15}broken"
+        - "charger.{0,15}broken"
+        - "charging.{0,15}failed"
+        - "charging.{0,15}problem"
+        - "charging.{0,15}issue"
+        - "charger.{0,15}offline"
+        - "charging reliability"
+    charging_cost:
+      patterns:
+        - "charging cost"
+        - "cost.*?charg"
+        - "price.*?charg"
+        - "per kWh"
+        - "electricity cost"
+    home_charging:
+      patterns:
+        - "home charg"
+        - "level 2"
+        - "\\bwallbox\\b"
+        - "home install"
+        - "overnight charg"
+
+  thermal:
+    thermal_management:
+      patterns:
+        - "thermal management"
+        - "battery cooling"
+        - "heat pump"
+        - "liquid.?cool"
+        - "active.?cool"
+        - "passive.?cool"
+        - "\\bHVAC\\b"
+    battery_overheating:
+      patterns:
+        - "overheating"
+        - "overheat"
+        - "battery.{0,10}hot"
+        - "thermal.{0,10}warning"
+        - "thermal.{0,10}throttl"
+        - "battery temperature"
+    cold_weather:
+      patterns:
+        - "cold.{0,15}battery"
+        - "battery.{0,15}cold"
+        - "preconditioning"
+        - "precondition"
+        - "cold soak"
+        - "winter.{0,15}battery"
+
+  reliability:
+    overall_reliability:
+      patterns:
+        - "\\breliability\\b"
+        - "\\breliable\\b"
+        - "\\bunreliable\\b"
+        - "\\bdependable\\b"
+        - "\\bbreakdown\\b"
+        - "broke down"
+    software_issues:
+      patterns:
+        - "software.{0,10}bug"
+        - "\\bOTA\\b"
+        - "\\bfirmware\\b"
+        - "software update"
+        - "\\bglitch\\b"
+        - "software issue"
+    repair_costs:
+      patterns:
+        - "repair cost"
+        - "repair bill"
+        - "out of warranty"
+        - "expensive repair"
+        - "costly repair"
+
+  ownership:
+    running_costs:
+      patterns:
+        - "running cost"
+        - "cost of ownership"
+        - "maintenance cost"
+        - "fuel saving"
+        - "electricity.{0,10}cheaper"
+        - "save.{0,10}money"
+    long_term:
+      patterns:
+        - "after.{0,5}year"
+        - "long.?term"
+        - "\\d+k miles"
+        - "\\d+,?000 miles"
+        - "\\d+ years?"
+    overall_satisfaction:
+      patterns:
+        - "\\brecommend\\b"
+        - "love.{0,10}car"
+        - "hate.{0,10}car"
+        - "\\bregret\\b"
+        - "best.{0,10}decision"
+        - "worst.{0,10}decision"
+        - "would.{0,10}buy again"
+
+# ── ENTITY GAZETTEER ─────────────────────────────────────────────────────────
+# Manufacturers → canonical name, lowercase aliases, known models.
+# All matching is case-insensitive. Lists are checked left-to-right; first hit wins.
+gazetteer:
+  manufacturers:
+    Tesla:
+      aliases: ["tesla", "tsla"]
+      models:
+        Model_3: ["model 3", "model3"]
+        Model_Y: ["model y", "modely"]
+        Model_S: ["model s"]
+        Model_X: ["model x"]
+        Cybertruck: ["cybertruck", "cyber truck"]
+
+    Volkswagen:
+      aliases: ["volkswagen", "vw"]
+      models:
+        ID4: ["id.4", "id4", "id 4"]
+        ID3: ["id.3", "id3", "id 3"]
+
+    Hyundai:
+      aliases: ["hyundai"]
+      models:
+        Ioniq5: ["ioniq 5", "ioniq5"]
+        Ioniq6: ["ioniq 6", "ioniq6"]
+        Kona_EV: ["kona ev", "kona electric"]
+
+    Kia:
+      aliases: ["kia"]
+      models:
+        EV6: ["ev6", "ev 6"]
+        EV9: ["ev9", "ev 9"]
+        Niro_EV: ["niro ev", "niro electric"]
+
+    Ford:
+      aliases: ["ford"]
+      models:
+        Mustang_Mach_E: ["mach-e", "mach e", "mustang mach-e"]
+        F150_Lightning: ["f-150 lightning", "f150 lightning", "lightning"]
+
+    Chevrolet:
+      aliases: ["chevy", "chevrolet"]
+      models:
+        Bolt: ["chevy bolt", "bolt ev", "bolt euv"]
+        Equinox_EV: ["equinox ev"]
+
+    Rivian:
+      aliases: ["rivian"]
+      models:
+        R1T: ["r1t"]
+        R1S: ["r1s"]
+
+    BMW:
+      aliases: ["bmw"]
+      models:
+        i4: ["bmw i4", "i4"]
+        iX: ["bmw ix"]
+        i3: ["bmw i3", "i3"]
+
+    Mercedes:
+      aliases: ["mercedes", "mercedes-benz"]
+      models:
+        EQS: ["eqs sedan", "eqs suv"]
+        EQB: ["eqb"]
+        EQC: ["eqc"]
+
+    Audi:
+      aliases: ["audi"]
+      models:
+        e-tron: ["e-tron gt", "q4 e-tron", "audi etron"]
+
+    Nissan:
+      aliases: ["nissan"]
+      models:
+        Leaf: ["nissan leaf", "nissan leaf"]
+        Ariya: ["ariya"]
+
+    Lucid:
+      aliases: ["lucid"]
+      models:
+        Air: ["lucid air"]
+
+    Porsche:
+      aliases: ["porsche"]
+      models:
+        Taycan: ["taycan"]
+
+  vehicle_types:
+    SUV: ["suv", "crossover", "sport utility"]
+    Sedan: ["sedan", "saloon"]
+    Pickup: ["pickup truck", "pickup", "ute"]
+    Hatchback: ["hatchback"]
+    Van: ["minivan", "mpv"]
+
+  # Regex for 4-digit model years 2010–2039
+  model_year_pattern: "\\b(20[1-3]\\d)\\b"
+
+# ── QUALITY FILTER ────────────────────────────────────────────────────────────
+quality:
+  min_text_length: 20
+  min_relevance_score: 0.0
+  spam_patterns:
+    - "\\bclick here\\b"
+    - "\\bvisit our website\\b"
+    - "\\bfree.*?trial\\b"
+    - "\\bdiscount code\\b"
+    - "\\baffiliate link\\b"
+    - "\\bsponsored post\\b"
+    - "^\\[deleted\\]$"
+    - "^\\[removed\\]$"
+
+# ── REDDIT settings ───────────────────────────────────────────────────────────
+subreddits:
+  - electricvehicles
+  - teslamotors
+  - Ioniq5
+  - leaf
+  - ChevyBolt
+  - Rivian
+  - cars
+  - askcarsales
+
+max_records_per_source: 500
+language_filter: null
+date_from: null
+date_to: null

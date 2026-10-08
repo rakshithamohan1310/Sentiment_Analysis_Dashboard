@@ -1,0 +1,55 @@
+# ── Web framework ─────────────────────────────────────────────
+fastapi==0.111.1
+uvicorn[standard]==0.30.1
+
+# ── Database ──────────────────────────────────────────────────
+sqlalchemy==2.0.31
+asyncpg==0.29.0
+alembic==1.13.2
+psycopg2-binary==2.9.9       # used by Alembic CLI (sync)
+
+# ── HTTP client ───────────────────────────────────────────────
+httpx==0.27.0
+
+# ── Retry / resilience ────────────────────────────────────────
+tenacity==8.4.2
+
+# ── Validation ────────────────────────────────────────────────
+pydantic==2.7.4
+pydantic-settings==2.3.4
+
+# ── Config ────────────────────────────────────────────────────
+pyyaml==6.0.1
+
+# ── Reddit API ────────────────────────────────────────────────
+praw==7.7.1
+
+# ── Utilities ─────────────────────────────────────────────────
+python-dotenv==1.0.1
+python-dateutil==2.9.0
+
+# ── Phase 2: NLP & Processing ─────────────────────────────────
+# Language detection (lightweight, no model download needed)
+langdetect==1.0.9
+
+# HTML stripping
+bleach==6.1.0
+
+# Sentiment: transformer model (falls back to lexicon if unavailable)
+# CPU-only; override SENTIMENT_MODEL=lexicon to skip download entirely
+transformers==4.41.2
+torch==2.3.1
+
+# Entity / fuzzy matching
+rapidfuzz==3.9.3
+
+# Near-duplicate detection (MinHash)
+datasketch==1.6.5
+
+# ── Testing ───────────────────────────────────────────────────
+pytest==8.2.2
+pytest-asyncio==0.23.7
+pytest-mock==3.14.0
+httpx==0.27.0
+respx==0.21.1
+aiosqlite==0.20.0

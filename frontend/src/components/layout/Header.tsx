@@ -1,8 +1,6 @@
 import { Search, Bell, ChevronDown } from 'lucide-react'
-import { useState } from 'react'
 
 export function Header() {
-  const [search, setSearch] = useState('')
 
   return (
     <header className="h-14 bg-white border-b border-gray-200 flex items-center gap-4 px-5 shrink-0 z-10">
@@ -17,10 +15,11 @@ export function Header() {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
         <input
           type="text"
-          placeholder="Search reviews, issues, vehicles…"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="w-full pl-9 pr-3 py-1.5 bg-gray-50 border border-gray-200 rounded-md text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          placeholder="Text search is not available"
+          value=""
+          disabled
+          title="GET /api/reviews has no text-search parameter"
+          className="w-full pl-9 pr-3 py-1.5 bg-gray-50 border border-gray-200 rounded-md text-sm text-gray-400 cursor-not-allowed"
         />
       </div>
 
@@ -29,9 +28,13 @@ export function Header() {
       {/* Actions */}
       <div className="flex items-center gap-1">
         {/* Notifications */}
-        <button className="relative p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors">
+        <button
+          type="button"
+          disabled
+          title="Alerts are not available from the current API"
+          className="relative p-2 text-gray-300 cursor-not-allowed rounded-md"
+        >
           <Bell className="w-4.5 h-4.5" style={{ width: 18, height: 18 }} />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
         </button>
 
         {/* Profile */}

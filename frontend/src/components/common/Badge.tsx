@@ -7,14 +7,12 @@ const SENTIMENT_STYLES: Record<SentimentLabel, string> = {
   positive: 'bg-emerald-50 text-emerald-700 border-emerald-200',
   neutral:  'bg-gray-50 text-gray-600 border-gray-200',
   negative: 'bg-red-50 text-red-700 border-red-200',
-  mixed:    'bg-amber-50 text-amber-700 border-amber-200',
 }
 
 const SENTIMENT_DOTS: Record<SentimentLabel, string> = {
   positive: 'bg-emerald-500',
   neutral:  'bg-gray-400',
   negative: 'bg-red-500',
-  mixed:    'bg-amber-500',
 }
 
 export function SentimentBadge({

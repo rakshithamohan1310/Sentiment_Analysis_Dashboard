@@ -1,3 +1,4 @@
+// Labelled demo fixtures only. The Command Center does not import this module.
 import type {
   KPI,
   Issue,
@@ -283,7 +284,7 @@ export const reviews: Review[] = [
   {
     id: 'rev-001',
     text: 'Charging is extremely fast but the battery range has dropped noticeably after two years. Not what I expected from the warranty coverage.',
-    sentiment: 'mixed',
+    sentiment: 'negative',
     sentimentScore: 0.41,
     aspects: ['charging_speed', 'range_loss', 'battery_health'],
     category: 'battery',
@@ -327,7 +328,7 @@ export const reviews: Review[] = [
   },
   {
     id: 'rev-004',
-    text: 'Battery health dropped to 79% at 55,000 miles. The warranty says 70% threshold — feel like I'm gambling every month.',
+    text: "Battery health dropped to 79% at 55,000 miles. The warranty says 70% threshold — feel like I'm gambling every month.",
     sentiment: 'negative',
     sentimentScore: 0.76,
     aspects: ['battery_health', 'battery_warranty'],

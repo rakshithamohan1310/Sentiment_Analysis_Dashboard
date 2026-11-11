@@ -11,6 +11,7 @@ Endpoints
 ---------
 POST /api/process/run
 GET  /api/processing/status
+GET  /api/reviews/options
 GET  /api/reviews
 GET  /api/sentiment/summary
 GET  /api/sentiment/trend
@@ -26,6 +27,7 @@ from typing import Any, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import and_, case, cast, func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import noload
 
 from backend.api.dependencies import get_session
 from backend.api.schemas import (
@@ -36,6 +38,7 @@ from backend.api.schemas import (
     ProcessRunResponse,
     ProcessingStatusResponse,
     ReviewOut,
+    ReviewOptionsResponse,
     ReviewsResponse,
     SentimentBreakdown,
     SentimentSummaryResponse,
@@ -62,6 +65,80 @@ def _base_review_filters(
     if exclude_duplicates:
         filters.append(Review.is_duplicate.is_(False))
     return filters
+
+
+_WHEEL_CATEGORIES = {"2W", "3W", "4W"}
+
+
+def _text_filter(value: Optional[str]) -> Optional[str]:
+    """Blank query text means the filter is unset."""
+    if value is None:
+        return None
+    cleaned = value.strip()
+    return cleaned or None
+
+
+def _category_filter(value: Optional[str]) -> Optional[str]:
+    """Normalize 2W/3W/4W. Any other text stays unmatched and returns no rows."""
+    cleaned = _text_filter(value)
+    if cleaned is None:
+        return None
+    upper = cleaned.upper()
+    if upper in _WHEEL_CATEGORIES:
+        return upper
+    return cleaned
+
+
+def _scoped_filters(
+    include_synthetic: bool,
+    *,
+    source: Optional[str] = None,
+    vehicle_type: Optional[str] = None,
+    manufacturer: Optional[str] = None,
+    vehicle_model: Optional[str] = None,
+    vehicle_category: Optional[str] = None,
+    sentiment: Optional[str] = None,
+    date_from: Optional[datetime] = None,
+    date_to: Optional[datetime] = None,
+    exclude_duplicates: bool = True,
+) -> list:
+    """Filters already supported by GET /api/reviews, reused by aggregates.
+
+    manufacturer and vehicle_model match the stored review columns.
+    vehicle_type remains body style (SUV, Sedan, and so on), not 2W/3W/4W.
+    State/UT is not applied: reviews have no location column.
+    """
+    filters = _base_review_filters(include_synthetic, exclude_duplicates)
+    if source:
+        filters.append(Review.source == source.lower().strip())
+    if vehicle_type:
+        filters.append(Review.vehicle_type == vehicle_type.strip())
+    manufacturer_name = _text_filter(manufacturer)
+    if manufacturer_name:
+        filters.append(Review.manufacturer == manufacturer_name)
+    model_name = _text_filter(vehicle_model)
+    if model_name:
+        filters.append(Review.vehicle_model == model_name)
+    category_name = _category_filter(vehicle_category)
+    if category_name:
+        filters.append(Review.vehicle_category == category_name)
+    if sentiment:
+        filters.append(Review.sentiment_label == sentiment.lower().strip())
+    if date_from:
+        filters.append(Review.published_at >= date_from)
+    if date_to:
+        filters.append(Review.published_at <= date_to)
+    return filters
+
+
+async def _distinct_column(session: AsyncSession, column, filters: list) -> list[str]:
+    result = await session.execute(
+        select(column)
+        .where(and_(*filters, column.is_not(None), column != ""))
+        .distinct()
+        .order_by(column)
+    )
+    return [row[0] for row in result.fetchall()]
 
 
 def _sentiment_breakdown(pos: int, neu: int, neg: int) -> "SentimentBreakdown":
@@ -138,6 +215,60 @@ async def processing_status(
     )
 
 
+# ── GET /api/reviews/options ──────────────────────────────────────────────────
+
+@router.get(
+    "/reviews/options",
+    response_model=ReviewOptionsResponse,
+    summary="Distinct stored manufacturers and vehicle models",
+    tags=["reviews"],
+)
+async def review_options(
+    include_synthetic: bool               = Query(False),
+    source:            Optional[str]      = Query(None),
+    manufacturer:      Optional[str]      = Query(None),
+    vehicle_model:     Optional[str]      = Query(None),
+    vehicle_category:  Optional[str]      = Query(None),
+    date_from:         Optional[datetime] = Query(None),
+    date_to:           Optional[datetime] = Query(None),
+    session:           AsyncSession       = Depends(get_session),
+) -> ReviewOptionsResponse:
+    """Values the dashboard can offer. Null and blank names are omitted.
+
+    A selected manufacturer narrows the model list. A selected model narrows
+    the manufacturer list. Sentiment is not applied, so the dropdowns stay
+    stable while the sentiment chart still shows all three classes.
+    """
+    shared = dict(
+        source=source,
+        date_from=date_from,
+        date_to=date_to,
+        vehicle_category=vehicle_category,
+    )
+    manufacturers = await _distinct_column(
+        session,
+        Review.manufacturer,
+        _scoped_filters(
+            include_synthetic,
+            vehicle_model=vehicle_model,
+            **shared,
+        ),
+    )
+    vehicle_models = await _distinct_column(
+        session,
+        Review.vehicle_model,
+        _scoped_filters(
+            include_synthetic,
+            manufacturer=manufacturer,
+            **shared,
+        ),
+    )
+    return ReviewOptionsResponse(
+        manufacturers=manufacturers,
+        vehicle_models=vehicle_models,
+    )
+
+
 # ── GET /api/reviews ──────────────────────────────────────────────────────────
 
 @router.get(
@@ -153,6 +284,7 @@ async def list_reviews(
     sentiment:         Optional[str]      = Query(None, description="positive|neutral|negative"),
     manufacturer:      Optional[str]      = Query(None),
     vehicle_model:     Optional[str]      = Query(None),
+    vehicle_category:  Optional[str]      = Query(None),
     vehicle_type:      Optional[str]      = Query(None),
     date_from:         Optional[datetime] = Query(None),
     date_to:           Optional[datetime] = Query(None),
@@ -161,22 +293,17 @@ async def list_reviews(
     offset:            int                = Query(0, ge=0),
     session:           AsyncSession       = Depends(get_session),
 ) -> ReviewsResponse:
-    filters = _base_review_filters(include_synthetic)
-
-    if source:
-        filters.append(Review.source == source.lower())
-    if sentiment:
-        filters.append(Review.sentiment_label == sentiment.lower())
-    if manufacturer:
-        filters.append(Review.manufacturer == manufacturer)
-    if vehicle_model:
-        filters.append(Review.vehicle_model == vehicle_model)
-    if vehicle_type:
-        filters.append(Review.vehicle_type == vehicle_type)
-    if date_from:
-        filters.append(Review.published_at >= date_from)
-    if date_to:
-        filters.append(Review.published_at <= date_to)
+    filters = _scoped_filters(
+        include_synthetic,
+        source=source,
+        vehicle_type=vehicle_type,
+        manufacturer=manufacturer,
+        vehicle_model=vehicle_model,
+        vehicle_category=vehicle_category,
+        sentiment=sentiment,
+        date_from=date_from,
+        date_to=date_to,
+    )
 
     # Aspect filters require a join
     if category or aspect:
@@ -187,6 +314,7 @@ async def list_reviews(
             aspect_filters.append(ReviewAspect.aspect == aspect)
         q = (
             select(Review)
+            .options(noload(Review.aspects))
             .join(ReviewAspect, ReviewAspect.review_id == Review.review_id)
             .where(and_(*filters, *aspect_filters))
             .distinct()
@@ -197,7 +325,7 @@ async def list_reviews(
             .where(and_(*filters, *aspect_filters))
         )
     else:
-        q       = select(Review).where(and_(*filters))
+        q       = select(Review).options(noload(Review.aspects)).where(and_(*filters))
         count_q = select(func.count()).select_from(Review).where(and_(*filters))
 
     total_result = await session.execute(count_q)
@@ -234,10 +362,27 @@ async def list_reviews(
     tags=["analytics"],
 )
 async def sentiment_summary(
-    include_synthetic: bool = Query(False),
+    include_synthetic: bool               = Query(False),
+    source:            Optional[str]      = Query(None),
+    vehicle_type:      Optional[str]      = Query(None),
+    manufacturer:      Optional[str]      = Query(None),
+    vehicle_model:     Optional[str]      = Query(None),
+    vehicle_category:  Optional[str]      = Query(None),
+    date_from:         Optional[datetime] = Query(None),
+    date_to:           Optional[datetime] = Query(None),
     session: AsyncSession   = Depends(get_session),
 ) -> SentimentSummaryResponse:
-    filters = _base_review_filters(include_synthetic)
+    # Sentiment is omitted on purpose: this response is the class breakdown.
+    filters = _scoped_filters(
+        include_synthetic,
+        source=source,
+        vehicle_type=vehicle_type,
+        manufacturer=manufacturer,
+        vehicle_model=vehicle_model,
+        vehicle_category=vehicle_category,
+        date_from=date_from,
+        date_to=date_to,
+    )
 
     result = await session.execute(
         select(
@@ -284,11 +429,27 @@ async def sentiment_summary(
     tags=["analytics"],
 )
 async def sentiment_trend(
-    granularity:       str   = Query("month", pattern="^(day|week|month)$"),
-    include_synthetic: bool  = Query(False),
+    granularity:       str                = Query("month", pattern="^(day|week|month)$"),
+    include_synthetic: bool               = Query(False),
+    source:            Optional[str]      = Query(None),
+    vehicle_type:      Optional[str]      = Query(None),
+    manufacturer:      Optional[str]      = Query(None),
+    vehicle_model:     Optional[str]      = Query(None),
+    vehicle_category:  Optional[str]      = Query(None),
+    date_from:         Optional[datetime] = Query(None),
+    date_to:           Optional[datetime] = Query(None),
     session: AsyncSession    = Depends(get_session),
 ) -> SentimentTrendResponse:
-    filters = _base_review_filters(include_synthetic)
+    filters = _scoped_filters(
+        include_synthetic,
+        source=source,
+        vehicle_type=vehicle_type,
+        manufacturer=manufacturer,
+        vehicle_model=vehicle_model,
+        vehicle_category=vehicle_category,
+        date_from=date_from,
+        date_to=date_to,
+    )
     filters.append(Review.published_at.isnot(None))
 
     # Period expression — database-agnostic via Python formatting after fetch
@@ -299,6 +460,7 @@ async def sentiment_trend(
             func.count(Review.review_id).label("cnt"),
         )
         .where(and_(*filters))
+        .group_by(Review.published_at, Review.sentiment_label)
         .order_by(Review.published_at)
     )
     rows = result.fetchall()
@@ -358,11 +520,29 @@ async def sentiment_trend(
     tags=["analytics"],
 )
 async def list_aspects(
-    category:          Optional[str] = Query(None),
-    include_synthetic: bool          = Query(False),
+    category:          Optional[str]      = Query(None),
+    include_synthetic: bool               = Query(False),
+    source:            Optional[str]      = Query(None),
+    vehicle_type:      Optional[str]      = Query(None),
+    manufacturer:      Optional[str]      = Query(None),
+    vehicle_model:     Optional[str]      = Query(None),
+    vehicle_category:  Optional[str]      = Query(None),
+    sentiment:         Optional[str]      = Query(None, description="positive|neutral|negative"),
+    date_from:         Optional[datetime] = Query(None),
+    date_to:           Optional[datetime] = Query(None),
     session: AsyncSession            = Depends(get_session),
 ) -> AspectsResponse:
-    review_filters = _base_review_filters(include_synthetic)
+    review_filters = _scoped_filters(
+        include_synthetic,
+        source=source,
+        vehicle_type=vehicle_type,
+        manufacturer=manufacturer,
+        vehicle_model=vehicle_model,
+        vehicle_category=vehicle_category,
+        sentiment=sentiment,
+        date_from=date_from,
+        date_to=date_to,
+    )
 
     asp_filters = [ReviewAspect.review_id == Review.review_id]
     if category:
@@ -427,11 +607,29 @@ async def list_aspects(
 )
 async def aspect_detail(
     aspect:            str,
-    include_synthetic: bool = Query(False),
-    limit:             int  = Query(10, ge=1, le=50),
+    include_synthetic: bool               = Query(False),
+    source:            Optional[str]      = Query(None),
+    vehicle_type:      Optional[str]      = Query(None),
+    manufacturer:      Optional[str]      = Query(None),
+    vehicle_model:     Optional[str]      = Query(None),
+    vehicle_category:  Optional[str]      = Query(None),
+    sentiment:         Optional[str]      = Query(None, description="positive|neutral|negative"),
+    date_from:         Optional[datetime] = Query(None),
+    date_to:           Optional[datetime] = Query(None),
+    limit:             int                = Query(10, ge=1, le=50),
     session: AsyncSession   = Depends(get_session),
 ) -> AspectDetailResponse:
-    review_filters = _base_review_filters(include_synthetic)
+    review_filters = _scoped_filters(
+        include_synthetic,
+        source=source,
+        vehicle_type=vehicle_type,
+        manufacturer=manufacturer,
+        vehicle_model=vehicle_model,
+        vehicle_category=vehicle_category,
+        sentiment=sentiment,
+        date_from=date_from,
+        date_to=date_to,
+    )
 
     result = await session.execute(
         select(

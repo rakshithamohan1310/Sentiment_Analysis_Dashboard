@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, MessageSquare, Car, Battery, Zap, Globe,
-  AlertTriangle, TrendingUp, Route, Lightbulb, FileText,
+  AlertTriangle, Route, Lightbulb, FileText,
   Cpu, Database, Settings, LucideIcon,
 } from 'lucide-react'
 import type { NavPage } from '@/types'
@@ -12,9 +12,8 @@ const PAGE_META: Record<NavPage, { label: string; icon: LucideIcon; description:
   'battery':           { label: 'Battery',           icon: Battery,         description: 'Deep-dive into battery-related customer signals.' },
   'charging':          { label: 'Charging',          icon: Zap,             description: 'Charging speed, reliability and cost complaints.' },
   'platforms':         { label: 'Platforms',         icon: Globe,           description: 'Compare sentiment and volume across data sources.' },
-  'issues':            { label: 'Issues',            icon: AlertTriangle,   description: 'Full issue registry with lifecycle management.' },
-  'predictions':       { label: 'Predictions',       icon: TrendingUp,      description: 'Trend forecasts and emerging signal detection.' },
-  'customer-journeys': { label: 'Customer Journeys', icon: Route,           description: 'Trace how issues evolve across ownership stages.' },
+  'issues':            { label: 'Issues',            icon: AlertTriangle,   description: 'Placeholder. Aspect mentions are on the Command Center.' },
+  'customer-journeys': { label: 'Customer Journeys', icon: Route,           description: 'Placeholder. This page is not connected to the API.' },
   'insights':          { label: 'Insights',          icon: Lightbulb,       description: 'AI-generated pattern analysis and recommendations.' },
   'reports':           { label: 'Reports',           icon: FileText,        description: 'Export and schedule automated reports.' },
   'domain':            { label: 'Domain',            icon: Cpu,             description: 'Configure the active analysis domain and categories.' },
@@ -38,9 +37,8 @@ export function PlaceholderPage({ page }: PlaceholderPageProps) {
         </div>
         <h2 className="text-base font-semibold text-gray-900 mb-1">{meta.label}</h2>
         <p className="text-sm text-gray-500 mb-5">{meta.description}</p>
-        <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 border border-blue-100 rounded-full px-4 py-2 text-xs font-medium">
-          <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse" />
-          Coming in the next build phase
+        <div className="inline-flex items-center gap-2 bg-amber-50 text-amber-800 border border-amber-100 rounded-full px-4 py-2 text-xs font-medium">
+          Placeholder — not connected to the API
         </div>
       </div>
     </div>

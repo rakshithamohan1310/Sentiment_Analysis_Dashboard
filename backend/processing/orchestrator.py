@@ -158,8 +158,11 @@ class ProcessingOrchestrator:
     def _get_entity_extractor(self):
         if self._entity_ext is None:
             from backend.processing.entity import EntityExtractor
-            gazetteer = self._get_domain_config().get("gazetteer", {})
-            self._entity_ext = EntityExtractor(gazetteer)
+            config = self._get_domain_config()
+            self._entity_ext = EntityExtractor(
+                config.get("gazetteer", {}),
+                config.get("vehicle_categories"),
+            )
         return self._entity_ext
 
     def _get_aspect_extractor(self):
@@ -349,6 +352,7 @@ class ProcessingOrchestrator:
             manufacturer         = entity.manufacturer,
             vehicle_model        = entity.vehicle_model,
             model_year           = entity.model_year,
+            vehicle_category     = entity.vehicle_category,
             domain               = self._domain_name,
             sentiment_label      = sent_result.label      if sent_result else None,
             sentiment_score      = sent_result.score      if sent_result else None,

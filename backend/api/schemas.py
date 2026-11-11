@@ -175,6 +175,7 @@ class ReviewOut(BaseModel):
     vehicle_type:        Optional[str]
     manufacturer:        Optional[str]
     vehicle_model:       Optional[str]
+    vehicle_category:    Optional[str]
     model_year:          Optional[int]
     sentiment_label:     Optional[str]
     sentiment_score:     Optional[float]
@@ -196,6 +197,12 @@ class ReviewsResponse(BaseModel):
     limit:  int
     offset: int
     items:  list[ReviewOut]
+
+
+class ReviewOptionsResponse(BaseModel):
+    """Distinct stored manufacturer and model names for dashboard filters."""
+    manufacturers: list[str]
+    vehicle_models: list[str]
 
 
 # ── GET /api/sentiment/summary ────────────────────────────────────────────────

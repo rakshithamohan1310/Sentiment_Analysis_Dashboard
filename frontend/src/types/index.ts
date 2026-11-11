@@ -8,7 +8,6 @@ export type NavPage =
   | 'charging'
   | 'platforms'
   | 'issues'
-  | 'predictions'
   | 'customer-journeys'
   | 'insights'
   | 'reports'
@@ -18,17 +17,23 @@ export type NavPage =
 
 // ─── Filters ─────────────────────────────────────────────────────────────────
 
+export type TimeRange = 'Last 7 days' | 'Last 30 days' | 'Last 90 days' | 'Last 12 months' | 'All time'
+export type SourceFilter = 'all' | 'reddit' | 'youtube'
+export type SentimentFilter = 'all' | 'positive' | 'neutral' | 'negative'
+
 export interface FilterState {
-  domain: string
-  timeRange: string
-  platform: string
-  vehicle: string
-  sentiment: string
+  timeRange: TimeRange
+  source: SourceFilter
+  sentiment: SentimentFilter
+  includeSynthetic: boolean
+  manufacturer: string
+  vehicleModel: string
+  vehicleCategory: string
 }
 
 // ─── Sentiment ───────────────────────────────────────────────────────────────
 
-export type SentimentLabel = 'positive' | 'neutral' | 'negative' | 'mixed'
+export type SentimentLabel = 'positive' | 'neutral' | 'negative'
 
 export interface SentimentBreakdown {
   positive: number
@@ -42,7 +47,7 @@ export interface KPI {
   id: string
   label: string
   value: string | number
-  change: number          // percent, positive = up
+  change: number | null   // percent vs previous trend bucket; null when the API has no comparison
   changeLabel: string
   description: string
   icon: string            // lucide icon name
@@ -114,7 +119,7 @@ export interface Platform {
   positivePct: number
   neutralPct: number
   topIssue: string
-  trend: number
+  trend?: number
 }
 
 // ─── AI Insight ──────────────────────────────────────────────────────────────
@@ -149,6 +154,17 @@ export interface TrendPoint {
 }
 
 // ─── Aspect × Sentiment (for bar chart) ──────────────────────────────────────
+
+/** Customer-reported aspect mention. Counts come from GET /api/aspects. */
+export interface ReportedMention {
+  aspect: string
+  category: string
+  label: string
+  mentions: number
+  positivePct: number
+  neutralPct: number
+  negativePct: number
+}
 
 export interface AspectSentimentRow {
   aspect: string

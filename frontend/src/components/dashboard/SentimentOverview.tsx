@@ -20,21 +20,9 @@ const COLORS = {
 
 interface SentimentOverviewProps {
   data: TrendPoint[]
-}
-
-// Compute overall breakdown from last data point
-function computeSummary(data: TrendPoint[]) {
-  if (!data.length) return { positive: 0, neutral: 0, negative: 0, score: 0 }
-  const last = data[data.length - 1]
-  const prev = data[data.length - 2]
-  const trend = prev ? last.negative - prev.negative : 0
-  return {
-    positive: last.positive,
-    neutral:  last.neutral,
-    negative: last.negative,
-    score: Math.round(last.positive - last.negative),
-    trend,
-  }
+  share: { positive: number; neutral: number; negative: number }
+  subtitle: string
+  negativeDelta: number | null
 }
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -55,28 +43,31 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   )
 }
 
-export function SentimentOverview({ data }: SentimentOverviewProps) {
-  const summary = computeSummary(data)
+export function SentimentOverview({ data, share, subtitle, negativeDelta }: SentimentOverviewProps) {
+  const net = Math.round(share.positive - share.negative)
 
   return (
     <Card className="flex flex-col">
       <CardHeader
         title="Sentiment Overview"
-        subtitle="12-month trend across all platforms"
+        subtitle={subtitle}
         action={
-          <div className="flex items-center gap-2">
-            <TrendBadge value={-(summary.trend ?? 0)} positive={false} suffix="pp" size="xs" />
-            <span className="text-xs text-gray-400">vs prev month</span>
-          </div>
+          negativeDelta === null ? (
+            <span className="text-xs text-gray-400">No previous bucket</span>
+          ) : (
+            <div className="flex items-center gap-2">
+              <TrendBadge value={-negativeDelta} positive={false} suffix="pp" size="xs" />
+              <span className="text-xs text-gray-400">negative share vs previous bucket</span>
+            </div>
+          )
         }
       />
 
-      {/* Summary pills */}
       <div className="flex gap-3 mb-4">
         {[
-          { label: 'Positive', value: summary.positive, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-          { label: 'Neutral',  value: summary.neutral,  color: 'text-gray-600',    bg: 'bg-gray-100'   },
-          { label: 'Negative', value: summary.negative, color: 'text-red-500',     bg: 'bg-red-50'     },
+          { label: 'Positive', value: share.positive, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+          { label: 'Neutral',  value: share.neutral,  color: 'text-gray-600',    bg: 'bg-gray-100'   },
+          { label: 'Negative', value: share.negative, color: 'text-red-500',     bg: 'bg-red-50'     },
         ].map(item => (
           <div key={item.label} className={`flex-1 rounded-lg ${item.bg} px-3 py-2`}>
             <div className={`text-lg font-bold ${item.color}`}>{item.value}%</div>
@@ -85,64 +76,69 @@ export function SentimentOverview({ data }: SentimentOverviewProps) {
         ))}
         <div className="flex-1 rounded-lg bg-blue-50 px-3 py-2">
           <div className="text-lg font-bold text-blue-600">
-            {summary.score > 0 ? '+' : ''}{summary.score}
+            {net > 0 ? '+' : ''}{net}
           </div>
-          <div className="text-xs text-gray-500 mt-0.5">Net score</div>
+          <div className="text-xs text-gray-500 mt-0.5">Positive minus negative (pp)</div>
         </div>
       </div>
 
-      {/* Chart */}
-      <div className="h-48">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
-            <defs>
-              {(['positive', 'neutral', 'negative'] as const).map(key => (
-                <linearGradient key={key} id={`grad-${key}`} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%"  stopColor={COLORS[key]} stopOpacity={0.2} />
-                  <stop offset="95%" stopColor={COLORS[key]} stopOpacity={0}   />
-                </linearGradient>
-              ))}
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-            <XAxis
-              dataKey="period"
-              tick={{ fontSize: 11, fill: '#94a3b8' }}
-              axisLine={false}
-              tickLine={false}
-            />
-            <YAxis
-              tick={{ fontSize: 11, fill: '#94a3b8' }}
-              axisLine={false}
-              tickLine={false}
-              tickFormatter={v => `${v}%`}
-              domain={[0, 80]}
-            />
-            <Tooltip content={<CustomTooltip />} />
-            <Area
-              type="monotone"
-              dataKey="positive"
-              stroke={COLORS.positive}
-              strokeWidth={2}
-              fill={`url(#grad-positive)`}
-            />
-            <Area
-              type="monotone"
-              dataKey="neutral"
-              stroke={COLORS.neutral}
-              strokeWidth={1.5}
-              fill={`url(#grad-neutral)`}
-              strokeDasharray="4 2"
-            />
-            <Area
-              type="monotone"
-              dataKey="negative"
-              stroke={COLORS.negative}
-              strokeWidth={2}
-              fill={`url(#grad-negative)`}
-            />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
+      {data.length === 0 ? (
+        <div className="h-48 flex items-center justify-center text-sm text-gray-500">
+          No dated feedback in this filter.
+        </div>
+      ) : (
+        <div className="h-48">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={data} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+              <defs>
+                {(['positive', 'neutral', 'negative'] as const).map(key => (
+                  <linearGradient key={key} id={`grad-${key}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%"  stopColor={COLORS[key]} stopOpacity={0.2} />
+                    <stop offset="95%" stopColor={COLORS[key]} stopOpacity={0}   />
+                  </linearGradient>
+                ))}
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+              <XAxis
+                dataKey="period"
+                tick={{ fontSize: 11, fill: '#94a3b8' }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis
+                tick={{ fontSize: 11, fill: '#94a3b8' }}
+                axisLine={false}
+                tickLine={false}
+                tickFormatter={v => `${v}%`}
+                domain={[0, 100]}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <Area
+                type="monotone"
+                dataKey="positive"
+                stroke={COLORS.positive}
+                strokeWidth={2}
+                fill="url(#grad-positive)"
+              />
+              <Area
+                type="monotone"
+                dataKey="neutral"
+                stroke={COLORS.neutral}
+                strokeWidth={1.5}
+                fill="url(#grad-neutral)"
+                strokeDasharray="4 2"
+              />
+              <Area
+                type="monotone"
+                dataKey="negative"
+                stroke={COLORS.negative}
+                strokeWidth={2}
+                fill="url(#grad-negative)"
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      )}
     </Card>
   )
 }

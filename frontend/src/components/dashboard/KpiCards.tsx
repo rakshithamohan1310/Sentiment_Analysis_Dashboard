@@ -32,12 +32,16 @@ function KpiCard({ kpi }: { kpi: KPI }) {
             isGoodTrend ? 'text-blue-600' : 'text-red-500'
           )} style={{ width: 18, height: 18 }} />
         </div>
-        <TrendBadge
-          value={kpi.change}
-          positive={kpi.positive}
-          suffix="%"
-          size="xs"
-        />
+        {kpi.change === null ? (
+          <span className="text-[10px] text-gray-400">No prior bucket</span>
+        ) : (
+          <TrendBadge
+            value={kpi.change}
+            positive={kpi.positive}
+            suffix="%"
+            size="xs"
+          />
+        )}
       </div>
 
       <div>

@@ -6,7 +6,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Cell,
 } from 'recharts'
 import { Card, CardHeader } from '@/components/common/Card'
 import type { AspectSentimentRow } from '@/types'
@@ -57,7 +56,7 @@ export function AspectSentimentChart({ data }: AspectSentimentChartProps) {
     <Card>
       <CardHeader
         title="Sentiment by Aspect"
-        subtitle="Positive / neutral / negative distribution per category"
+        subtitle="Positive, neutral, and negative share of mentions"
       />
       <div className="h-52">
         <ResponsiveContainer width="100%" height="100%">

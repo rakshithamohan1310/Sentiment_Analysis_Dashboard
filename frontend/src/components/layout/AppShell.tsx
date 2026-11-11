@@ -8,7 +8,11 @@ interface AppShellProps {
   activePage: NavPage
   onNavigate: (page: NavPage) => void
   filters: FilterState
-  onFilterChange: (key: keyof FilterState, value: string) => void
+  manufacturers: string[]
+  vehicleModels: string[]
+  optionsStatus: 'idle' | 'loading' | 'ready' | 'error'
+  optionsError: string | null
+  onFilterChange: (key: keyof FilterState, value: string | boolean) => void
   onResetFilters: () => void
   children: ReactNode
 }
@@ -17,6 +21,10 @@ export function AppShell({
   activePage,
   onNavigate,
   filters,
+  manufacturers,
+  vehicleModels,
+  optionsStatus,
+  optionsError,
   onFilterChange,
   onResetFilters,
   children,
@@ -29,6 +37,10 @@ export function AppShell({
         <Header />
         <FilterBar
           filters={filters}
+          manufacturers={manufacturers}
+          vehicleModels={vehicleModels}
+          optionsStatus={optionsStatus}
+          optionsError={optionsError}
           onFilterChange={onFilterChange}
           onResetFilters={onResetFilters}
         />

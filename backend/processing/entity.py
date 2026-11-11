@@ -8,6 +8,7 @@ Scans cleaned review text + title for mentions of:
   - vehicle_model  (e.g. "Model 3", "Ioniq 5")
   - model_year     (e.g. 2023)
   - vehicle_type   (e.g. "SUV", "Sedan")
+  - vehicle_category (2W, 3W, or 4W) only when the canonical model is mapped
 
 All lists come from the ``gazetteer`` section of the domain YAML.
 No manufacturer names, model names, or vehicle types are hard-coded here.
@@ -19,13 +20,15 @@ Matching rules
   searched only under that manufacturer's ``models`` dict.
 - vehicle_type is searched across all configured types.
 - model_year is extracted with the configurable regex pattern.
+- vehicle_category is looked up from the canonical model only.
+- Body style never assigns a wheel class.
 - Only the *first* match for each field is returned.
 - If a field is not found it is left as None — entities are NEVER guessed.
 
 Returns
 -------
 EntityResult dataclass with fields:
-  manufacturer, vehicle_model, model_year, vehicle_type
+  manufacturer, vehicle_model, model_year, vehicle_type, vehicle_category
 All fields are Optional[str | int]; None means "not found".
 """
 from __future__ import annotations
@@ -44,6 +47,7 @@ class EntityResult:
     vehicle_model: Optional[str] = None
     model_year:    Optional[int] = None
     vehicle_type:  Optional[str] = None
+    vehicle_category: Optional[str] = None
 
 
 class EntityExtractor:
@@ -55,8 +59,22 @@ class EntityExtractor:
     gazetteer : The ``gazetteer`` dict from the domain YAML.
     """
 
-    def __init__(self, gazetteer: dict[str, Any]) -> None:
+    def __init__(
+        self,
+        gazetteer: dict[str, Any],
+        vehicle_categories: dict[str, Any] | None = None,
+    ) -> None:
         self._gazetteer = gazetteer
+        raw_categories = (
+            vehicle_categories
+            if vehicle_categories is not None
+            else gazetteer.get("vehicle_categories", {})
+        )
+        self._categories: dict[str, str] = {}
+        if isinstance(raw_categories, dict):
+            for model_name, category in raw_categories.items():
+                if category in {"2W", "3W", "4W"}:
+                    self._categories[str(model_name)] = str(category)
 
         # Pre-compile the model-year pattern
         raw_year = gazetteer.get("model_year_pattern", r"\b(20[1-3]\d)\b")
@@ -114,12 +132,14 @@ class EntityExtractor:
         vehicle_model = self._find_model(combined, manufacturer) if manufacturer else None
         model_year    = self._find_year(combined)
         vehicle_type  = self._find_vehicle_type(combined)
+        vehicle_category = self._categories.get(vehicle_model) if vehicle_model else None
 
         return EntityResult(
             manufacturer  = manufacturer,
             vehicle_model = vehicle_model,
             model_year    = model_year,
             vehicle_type  = vehicle_type,
+            vehicle_category = vehicle_category,
         )
 
     # ── Private helpers ──────────────────────────────────────
@@ -179,10 +199,13 @@ def get_entity_extractor(
     if not domains:
         logger.warning("No domain configs found — entity extractor will be empty.")
         raw: dict[str, Any] = {}
+        categories = None
     else:
-        raw = _load_yaml(domains[0]).get("gazetteer", {})
+        loaded = _load_yaml(domains[0])
+        raw = loaded.get("gazetteer", {})
+        categories = loaded.get("vehicle_categories")
 
-    _EXTRACTOR = EntityExtractor(raw)
+    _EXTRACTOR = EntityExtractor(raw, categories)
     return _EXTRACTOR
 
 

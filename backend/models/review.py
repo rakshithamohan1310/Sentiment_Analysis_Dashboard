@@ -15,6 +15,7 @@ from enum import Enum as PyEnum
 
 from sqlalchemy import (
     Boolean,
+    CheckConstraint,
     DateTime,
     Float,
     ForeignKey,
@@ -68,6 +69,7 @@ class Review(Base):
     vehicle_model: Mapped[str | None] = mapped_column(String(128), nullable=True)
     model_year: Mapped[int | None]    = mapped_column(Integer,     nullable=True)
     domain: Mapped[str | None]        = mapped_column(String(64),  nullable=True)
+    vehicle_category: Mapped[str | None] = mapped_column(String(8), nullable=True)
 
     # ── Review-level sentiment ────────────────────────────────
     sentiment_label: Mapped[str | None]      = mapped_column(String(16), nullable=True)
@@ -121,6 +123,10 @@ class Review(Base):
 
     # ── Indexes ───────────────────────────────────────────────
     __table_args__ = (
+        CheckConstraint(
+            "vehicle_category IS NULL OR vehicle_category IN ('2W', '3W', '4W')",
+            name="ck_reviews_vehicle_category",
+        ),
         Index("ix_reviews_published_at",     "published_at"),
         Index("ix_reviews_source",           "source"),
         Index("ix_reviews_sentiment_label",  "sentiment_label"),

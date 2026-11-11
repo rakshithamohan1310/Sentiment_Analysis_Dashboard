@@ -263,6 +263,7 @@ gazetteer:
         Ioniq5: ["ioniq 5", "ioniq5"]
         Ioniq6: ["ioniq 6", "ioniq6"]
         Kona_EV: ["kona ev", "kona electric"]
+        Creta_Electric: ["creta electric", "creta ev"]
 
     Kia:
       aliases: ["kia"]
@@ -324,6 +325,105 @@ gazetteer:
       models:
         Taycan: ["taycan"]
 
+    Ola:
+      aliases: ["ola electric", "ola"]
+      models:
+        S1_Pro: ["s1 pro"]
+        S1_Air: ["s1 air"]
+        S1_X: ["s1 x"]
+
+    Ather:
+      aliases: ["ather"]
+      models:
+        450X: ["450x", "ather 450x"]
+        450S: ["450s"]
+        Rizta: ["rizta"]
+
+    TVS:
+      aliases: ["tvs"]
+      models:
+        iQube: ["iqube"]
+
+    Bajaj:
+      aliases: ["bajaj"]
+      models:
+        Chetak: ["chetak"]
+
+    Vida:
+      aliases: ["hero vida", "vida"]
+      models:
+        V1_Pro: ["vida v1 pro", "v1 pro"]
+        V1_Plus: ["vida v1 plus", "v1 plus"]
+
+    Revolt:
+      aliases: ["revolt"]
+      models:
+        RV400: ["rv400", "rv 400"]
+
+    Ultraviolette:
+      aliases: ["ultraviolette"]
+      models:
+        F77: ["f77"]
+
+    Simple:
+      aliases: ["simple energy"]
+      models:
+        Simple_One: ["simple one"]
+
+    Mahindra:
+      aliases: ["mahindra"]
+      models:
+        Treo: ["treo"]
+        Treo_Yaari: ["treo yaari", "treo yaarii"]
+        XUV400: ["xuv400", "xuv 400"]
+        BE_6: ["be 6", "be.6"]
+        XEV_9e: ["xev 9e", "xev9e"]
+
+    Piaggio:
+      aliases: ["piaggio"]
+      models:
+        Ape_E_Xtra: ["ape e-xtra", "ape exta", "ape e xtra"]
+        Ape_E_City: ["ape e-city", "ape e city"]
+
+    Euler:
+      aliases: ["euler"]
+      models:
+        HiLoad: ["hiload", "hi-load", "hi load"]
+
+    Altigreen:
+      aliases: ["altigreen"]
+      models:
+        neEV: ["neev"]
+
+    Tata:
+      aliases: ["tata motors", "tata"]
+      models:
+        Nexon_EV: ["nexon ev", "nexon.ev"]
+        Tiago_EV: ["tiago ev", "tiago.ev"]
+        Tigor_EV: ["tigor ev"]
+        Punch_EV: ["punch ev"]
+        Curvv_EV: ["curvv ev"]
+        Harrier_EV: ["harrier ev"]
+
+    MG:
+      aliases: ["mg motor", "mg"]
+      models:
+        ZS_EV: ["zs ev"]
+        Comet_EV: ["comet ev", "mg comet"]
+        Windsor_EV: ["windsor ev"]
+
+    BYD:
+      aliases: ["byd"]
+      models:
+        Atto_3: ["atto 3", "atto3"]
+        Seal: ["byd seal"]
+        Sealion_7: ["sealion 7", "sealion7"]
+
+    Citroen:
+      aliases: ["citroen", "citroën"]
+      models:
+        eC3: ["ec3", "e-c3", "ë-c3"]
+
   vehicle_types:
     SUV: ["suv", "crossover", "sport utility"]
     Sedan: ["sedan", "saloon"]
@@ -333,6 +433,75 @@ gazetteer:
 
   # Regex for 4-digit model years 2010–2039
   model_year_pattern: "\\b(20[1-3]\\d)\\b"
+
+# Canonical model -> wheel class. Body style never sets this value.
+vehicle_categories:
+  Model_3: 4W
+  Model_Y: 4W
+  Model_S: 4W
+  Model_X: 4W
+  Cybertruck: 4W
+  ID4: 4W
+  ID3: 4W
+  Ioniq5: 4W
+  Ioniq6: 4W
+  Kona_EV: 4W
+  Creta_Electric: 4W
+  EV6: 4W
+  EV9: 4W
+  Niro_EV: 4W
+  Mustang_Mach_E: 4W
+  F150_Lightning: 4W
+  Bolt: 4W
+  Equinox_EV: 4W
+  R1T: 4W
+  R1S: 4W
+  i4: 4W
+  iX: 4W
+  i3: 4W
+  EQS: 4W
+  EQB: 4W
+  EQC: 4W
+  e-tron: 4W
+  Leaf: 4W
+  Ariya: 4W
+  Air: 4W
+  Taycan: 4W
+  S1_Pro: 2W
+  S1_Air: 2W
+  S1_X: 2W
+  450X: 2W
+  450S: 2W
+  Rizta: 2W
+  iQube: 2W
+  Chetak: 2W
+  V1_Pro: 2W
+  V1_Plus: 2W
+  RV400: 2W
+  F77: 2W
+  Simple_One: 2W
+  Treo: 3W
+  Treo_Yaari: 3W
+  Ape_E_Xtra: 3W
+  Ape_E_City: 3W
+  HiLoad: 3W
+  neEV: 3W
+  Nexon_EV: 4W
+  Tiago_EV: 4W
+  Tigor_EV: 4W
+  Punch_EV: 4W
+  Curvv_EV: 4W
+  Harrier_EV: 4W
+  XUV400: 4W
+  BE_6: 4W
+  XEV_9e: 4W
+  ZS_EV: 4W
+  Comet_EV: 4W
+  Windsor_EV: 4W
+  Atto_3: 4W
+  Seal: 4W
+  Sealion_7: 4W
+  eC3: 4W
 
 # ── QUALITY FILTER ────────────────────────────────────────────────────────────
 quality:

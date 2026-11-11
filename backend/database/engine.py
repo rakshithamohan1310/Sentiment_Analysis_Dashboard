@@ -9,13 +9,11 @@ from backend.config.settings import get_settings
 
 _settings = get_settings()
 
-engine = create_async_engine(
-    _settings.database_url,
-    pool_pre_ping=True,
-    pool_size=10,
-    max_overflow=20,
-    echo=_settings.app_env == "development",
-)
+_engine_kwargs: dict = {"echo": _settings.app_env == "development"}
+if not _settings.database_url.startswith("sqlite"):
+    _engine_kwargs.update(pool_pre_ping=True, pool_size=10, max_overflow=20)
+
+engine = create_async_engine(_settings.database_url, **_engine_kwargs)
 
 AsyncSessionLocal = async_sessionmaker(
     bind=engine,

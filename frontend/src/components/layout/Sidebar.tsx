@@ -7,7 +7,6 @@ import {
   Zap,
   Globe,
   AlertTriangle,
-  TrendingUp,
   Route,
   Lightbulb,
   FileText,
@@ -30,22 +29,21 @@ interface NavItem {
 
 const PRIMARY_NAV: NavItem[] = [
   { id: 'command-center',    label: 'Command Center',    icon: LayoutDashboard, badge: undefined },
-  { id: 'reviews',           label: 'Reviews',           icon: MessageSquare },
-  { id: 'vehicles',          label: 'Vehicles',          icon: Car },
-  { id: 'battery',           label: 'Battery',           icon: Battery },
-  { id: 'charging',          label: 'Charging',          icon: Zap },
-  { id: 'platforms',         label: 'Platforms',         icon: Globe },
-  { id: 'issues',            label: 'Issues',            icon: AlertTriangle, badge: '17' },
-  { id: 'predictions',       label: 'Predictions',       icon: TrendingUp },
-  { id: 'customer-journeys', label: 'Customer Journeys', icon: Route },
-  { id: 'insights',          label: 'Insights',          icon: Lightbulb },
-  { id: 'reports',           label: 'Reports',           icon: FileText },
+  { id: 'reviews',           label: 'Reviews',           icon: MessageSquare, badge: 'Soon' },
+  { id: 'vehicles',          label: 'Vehicles',          icon: Car, badge: 'Soon' },
+  { id: 'battery',           label: 'Battery',           icon: Battery, badge: 'Soon' },
+  { id: 'charging',          label: 'Charging',          icon: Zap, badge: 'Soon' },
+  { id: 'platforms',         label: 'Platforms',         icon: Globe, badge: 'Soon' },
+  { id: 'issues',            label: 'Issues',            icon: AlertTriangle, badge: 'Soon' },
+  { id: 'customer-journeys', label: 'Customer Journeys', icon: Route, badge: 'Soon' },
+  { id: 'insights',          label: 'Insights',          icon: Lightbulb, badge: 'Soon' },
+  { id: 'reports',           label: 'Reports',           icon: FileText, badge: 'Soon' },
 ]
 
 const SECONDARY_NAV: NavItem[] = [
-  { id: 'domain',       label: 'Domain',       icon: Cpu },
-  { id: 'data-sources', label: 'Data Sources', icon: Database },
-  { id: 'settings',     label: 'Settings',     icon: Settings },
+  { id: 'domain',       label: 'Domain',       icon: Cpu, badge: 'Soon' },
+  { id: 'data-sources', label: 'Data Sources', icon: Database, badge: 'Soon' },
+  { id: 'settings',     label: 'Settings',     icon: Settings, badge: 'Soon' },
 ]
 
 interface SidebarProps {
